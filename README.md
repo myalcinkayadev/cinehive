@@ -6,6 +6,16 @@
 2. Encapsulate closely related entities and value objects.
 3. Protect the integrity of domain rules by managing internal consistency.
 
+## Additional Resources:
+* [Effective Aggregate Design - Part 1](https://www.dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_1.pdf)
+* [Effective Aggregate Design - Part 2](https://www.dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_2.pdf)
+* [Effective Aggregate Design - Part 3](https://www.dddcommunity.org/wp-content/uploads/files/pdf_articles/Vernon_2011_3.pdf)
+
+### **Making Aggregates Work Together Through Identity References**
+
+In **Domain-Driven Design (DDD)**, aggregates interact with each other while maintaining their **independence** and enforcing their own invariants. The recommended approach for enabling this interaction is through **identity references** rather than direct object references. This ensures aggregates are loosely coupled, scalable, and easier to manage in distributed systems.
+
+---
 
 ## Design Choices
 
@@ -76,7 +86,7 @@
 - **Law of Demeter**: Each entity interacts only with its immediate collaborators. For example:
   - The `Movie` aggregate schedules sessions through its own method, `scheduleSession()`, without directly manipulating the `Session` entity externally.
 
---
+---
 
 ## Architectural Choices
 
