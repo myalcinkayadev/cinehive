@@ -1,0 +1,11 @@
+import { Movie } from '../movie.entity';
+
+export interface MovieRepository {
+  nextIdentity(): string;
+  findById(id: string): Promise<Movie | null>;
+  findAll(): Promise<Movie[]>;
+  save(movie: Movie): Promise<void>;
+  delete(movieId: string): Promise<void>;
+}
+
+export const MOVIE_REPOSITORY = Symbol('MovieRepository');
