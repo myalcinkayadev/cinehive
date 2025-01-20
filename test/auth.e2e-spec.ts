@@ -1,50 +1,33 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { TestingModule, Test } from '@nestjs/testing';
-import { AppModule } from '../src/app.module';
-import * as request from 'supertest';
-import { MikroORM } from '@mikro-orm/core';
 import { UserRole } from '../src/shared/roles/user-role.enum';
 import { SignUpDto } from '../src/auth/dtos/sign-up.dto';
 import { LoginDto } from 'src/auth/dtos/login.dto';
+import { TestSetup } from './setup/e2e-test.setup';
 
 describe('Auth (E2E)', () => {
-  let app: INestApplication;
-  let orm: MikroORM;
+  const setup = new TestSetup();
 
   beforeAll(async () => {
-    const moduleRef: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleRef.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe());
-    await app.init();
-
-    orm = moduleRef.get<MikroORM>(MikroORM);
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await setup.init();
   });
 
   beforeEach(async () => {
-    const schemaGenerator = orm.getSchemaGenerator();
-    await schemaGenerator.refreshDatabase();
+    await setup.clearDatabase();
   });
 
   afterAll(async () => {
-    await orm.close();
-    await app.close();
+    await setup.teardown();
   });
 
   describe('sign-up', () => {
     it('should register a new user successfully', async () => {
       const newCustomer: SignUpDto = {
-        username: 'customer1',
-        password: 'secure_password',
+        username: 'customer',
+        password: 'secret',
         age: 25,
         role: UserRole.Customer,
       };
 
-      const response = await request(app.getHttpServer())
+      const response = await setup.request
         .post('/auth/signup')
         .send(newCustomer)
         .expect(201);
@@ -55,11 +38,11 @@ describe('Auth (E2E)', () => {
     it('should return 400 for missing required fields', async () => {
       const invalidSignup: Partial<SignUpDto> = {
         username: '',
-        password: 'secure_password',
+        password: 'secret',
         age: 25,
       };
 
-      const response = await request(app.getHttpServer())
+      const response = await setup.request
         .post('/auth/signup')
         .send(invalidSignup)
         .expect(400);
@@ -72,13 +55,13 @@ describe('Auth (E2E)', () => {
 
     it('should return 400 for invalid age', async () => {
       const invalidSignup: SignUpDto = {
-        username: 'testuser',
-        password: 'supersecret',
+        username: 'user',
+        password: 'secret',
         age: -5,
         role: UserRole.Customer,
       };
 
-      const response = await request(app.getHttpServer())
+      const response = await setup.request
         .post('/auth/signup')
         .send(invalidSignup)
         .expect(400);
@@ -88,13 +71,13 @@ describe('Auth (E2E)', () => {
 
     it('should return 400 for invalid role', async () => {
       const invalidSignup: SignUpDto = {
-        username: 'testuser',
-        password: 'supersecret',
+        username: 'user',
+        password: 'secret',
         age: 10,
         role: '-' as UserRole,
       };
 
-      const response = await request(app.getHttpServer())
+      const response = await setup.request
         .post('/auth/signup')
         .send(invalidSignup)
         .expect(400);
@@ -109,7 +92,7 @@ describe('Auth (E2E)', () => {
     it('should login successfully with valid credentials', async () => {
       const newCustomerDto: SignUpDto = {
         username: 'customer',
-        password: 'supersecret',
+        password: 'secret',
         age: 30,
         role: UserRole.Customer,
       };
@@ -119,12 +102,9 @@ describe('Auth (E2E)', () => {
         password: newCustomerDto.password,
       };
 
-      await request(app.getHttpServer())
-        .post('/auth/signup')
-        .send(newCustomerDto)
-        .expect(201);
+      await setup.request.post('/auth/signup').send(newCustomerDto).expect(201);
 
-      const response = await request(app.getHttpServer())
+      const response = await setup.request
         .post('/auth/login')
         .send(loginDto)
         .expect(200);
@@ -140,7 +120,7 @@ describe('Auth (E2E)', () => {
         password: 'wrongpassword',
       };
 
-      const response = await request(app.getHttpServer())
+      const response = await setup.request
         .post('/auth/login')
         .send(invalidCredentials)
         .expect(401);
@@ -153,7 +133,7 @@ describe('Auth (E2E)', () => {
         username: '',
       };
 
-      const response = await request(app.getHttpServer())
+      const response = await setup.request
         .post('/auth/login')
         .send(invalidLogin)
         .expect(400);
