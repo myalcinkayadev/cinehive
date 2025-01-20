@@ -1,0 +1,21 @@
+name: Deploy to Heroku
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Login to Heroku
+      run: echo "${{ secrets.HEROKU_API_KEY }}" | heroku auth:token --login
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+
+    - name: Deploy to Heroku
+      run: git push https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/${{ secrets.APP_NAME }}.git HEAD:refs/heads/main
