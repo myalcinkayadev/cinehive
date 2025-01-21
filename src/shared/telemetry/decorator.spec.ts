@@ -65,7 +65,7 @@ describe('Traceable Decorator', () => {
 
   it('should handle errors in synchronous methods', () => {
     class TestClass {
-      @Traceable('customSpan1')
+      @Traceable()
       syncMethod(): never {
         throw new Error('Sync Error');
       }
@@ -75,7 +75,7 @@ describe('Traceable Decorator', () => {
 
     expect(() => instance.syncMethod()).toThrow('Sync Error');
     expect(startActiveSpanMock).toHaveBeenCalledWith(
-      'customSpan1',
+      'TestClass.syncMethod',
       expect.any(Function),
     );
     expect(mockSpan.end).toHaveBeenCalledTimes(1);
@@ -86,7 +86,7 @@ describe('Traceable Decorator', () => {
 
   it('should handle errors in asynchronous methods', async () => {
     class TestClass {
-      @Traceable('customSpan2')
+      @Traceable()
       async asyncMethod(): Promise<never> {
         throw new Error('Async Error');
       }
@@ -96,7 +96,7 @@ describe('Traceable Decorator', () => {
 
     await expect(instance.asyncMethod()).rejects.toThrow('Async Error');
     expect(startActiveSpanMock).toHaveBeenCalledWith(
-      'customSpan2',
+      'TestClass.asyncMethod',
       expect.any(Function),
     );
     expect(mockSpan.end).toHaveBeenCalledTimes(1);
