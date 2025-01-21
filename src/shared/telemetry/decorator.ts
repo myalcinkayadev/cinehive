@@ -1,10 +1,17 @@
-import { trace } from '@opentelemetry/api';
+import { Span, trace, Tracer } from '@opentelemetry/api';
 
-function isAsyncFunction(fn: Function): boolean {
+function isAsyncFunction(fn: (...args: any[]) => any): boolean {
   return fn.constructor.name === 'AsyncFunction';
 }
 
-// TODO: Refactor the function
+type DescriptorExecutionContext = {
+  tracer: Tracer;
+  spanName: string;
+  originalMethod: (...args: unknown[]) => unknown;
+  descriptorContext: any;
+  descriptorArgs: unknown[];
+};
+
 export function Traceable(customSpanName?: string) {
   return function (
     target: Object,
@@ -14,35 +21,66 @@ export function Traceable(customSpanName?: string) {
     const className = target.constructor.name;
     const originalMethod = descriptor.value!;
     const spanName = customSpanName ?? `${className}.${methodName}`;
-
     const tracer = trace.getTracer('cinehive');
 
-    if (isAsyncFunction(originalMethod)) {
-      descriptor.value = async function (...args: unknown[]) {
-        return tracer.startActiveSpan(spanName, async (span) => {
-          try {
-            return await originalMethod.apply(this, args);
-          } catch (err) {
-            span.recordException(err as Error);
-            throw err;
-          } finally {
-            span.end();
-          }
-        });
+    descriptor.value = function (...args: unknown[]) {
+      const context: DescriptorExecutionContext = {
+        tracer,
+        spanName,
+        originalMethod,
+        descriptorContext: this,
+        descriptorArgs: args,
       };
-    } else {
-      descriptor.value = function (...args: unknown[]) {
-        return tracer.startActiveSpan(spanName, (span) => {
-          try {
-            return originalMethod.apply(this, args);
-          } catch (err) {
-            span.recordException(err as Error);
-            throw err;
-          } finally {
-            span.end();
-          }
-        });
-      };
-    }
+
+      return isAsyncFunction(originalMethod)
+        ? asyncExecute(context)
+        : syncExecute(context);
+    };
   };
+}
+
+function asyncExecute({
+  tracer,
+  spanName,
+  originalMethod,
+  descriptorContext,
+  descriptorArgs,
+}: DescriptorExecutionContext): Promise<unknown> {
+  return tracer.startActiveSpan(spanName, async (span: Span) => {
+    try {
+      return await originalMethod.apply(descriptorContext, descriptorArgs);
+    } catch (err) {
+      handleSpanError(span, err);
+      throw err;
+    } finally {
+      span.end();
+    }
+  });
+}
+
+function syncExecute({
+  tracer,
+  spanName,
+  originalMethod,
+  descriptorContext,
+  descriptorArgs,
+}: DescriptorExecutionContext): unknown {
+  return tracer.startActiveSpan(spanName, (span: Span) => {
+    try {
+      return originalMethod.apply(descriptorContext, descriptorArgs);
+    } catch (err) {
+      handleSpanError(span, err);
+      throw err;
+    } finally {
+      span.end();
+    }
+  });
+}
+
+function handleSpanError(span: Span, err: unknown): void {
+  if (err instanceof Error) {
+    span.recordException(err);
+  } else {
+    span.recordException(new Error(String(err)));
+  }
 }
