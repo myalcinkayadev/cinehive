@@ -1,6 +1,6 @@
 import { UserRole } from '../src/shared/roles/user-role.enum';
 import { SignUpDto } from '../src/auth/dtos/sign-up.dto';
-import { LoginDto } from 'src/auth/dtos/login.dto';
+import { LoginDto } from '../src/auth/dtos/login.dto';
 import { TestSetup } from './setup/e2e-test.setup';
 
 describe('Auth (E2E)', () => {

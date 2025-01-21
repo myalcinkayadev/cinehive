@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { Auth } from '../../../auth/decorators/auth.decorator';
 import { UserRole } from '../../../shared/roles/user-role.enum';
-import { AddMovieDto } from '../../../movie-management/application/dtos/add-movie.dto';
+import { MovieDto } from '../../application/dtos/movie.dto';
 import { UpdateMovieDto } from '../../../movie-management/application/dtos/update-movie.dto';
 import { WatchMovieDto } from '../../../movie-management/application/dtos/watch-movie.dto';
 import { CurrentUser } from '../../../shared/decorators/current-user.decorator';
@@ -19,6 +19,7 @@ import { UpdateMovieUseCase } from '../../../movie-management/application/usecas
 import { DeleteMovieUseCase } from '../../../movie-management/application/usecases/delete-movie.use-case';
 import { WatchMovieUseCase } from '../../../movie-management/application/usecases/watch-movie.use-case';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { MovieMapper } from '../mappers/movie.mapper';
 
 @Controller('movies')
 export class MovieController {
@@ -38,8 +39,9 @@ export class MovieController {
     description: 'The movie has been successfully added.',
   })
   @ApiResponse({ status: 400 })
-  async addMovie(@Body() addMovieDto: AddMovieDto) {
-    return this.addMovieUseCase.execute(addMovieDto);
+  async addMovie(@Body() addMovieDto: MovieDto) {
+    const movie = await this.addMovieUseCase.execute(addMovieDto);
+    return MovieMapper.toDto(movie);
   }
 
   @Get()
@@ -47,7 +49,8 @@ export class MovieController {
   @ApiOperation({ summary: 'Retrieve all movies' })
   @ApiResponse({ status: 200, description: 'List of all movies.' })
   async retrieveMovies() {
-    return this.retrieveMovieUseCase.execute();
+    const movies = await this.retrieveMovieUseCase.execute();
+    return movies.map((movie) => MovieMapper.toDto(movie));
   }
 
   @Patch(':id')
