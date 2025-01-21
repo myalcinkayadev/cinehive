@@ -19,7 +19,11 @@ export class Room implements ValueObject {
     return this.name.toLowerCase() === other.name.toLowerCase();
   }
 
-  toString(): string {
+  valueOf(): string {
     return this.name;
+  }
+
+  toString(): string {
+    return this.valueOf();
   }
 }

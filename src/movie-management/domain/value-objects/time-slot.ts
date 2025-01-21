@@ -2,8 +2,8 @@ import { ValueObject } from '../../../shared/domain/value-object';
 
 export class TimeSlot implements ValueObject {
   constructor(
-    private readonly startTime: string,
-    private readonly endTime: string,
+    public readonly startTime: string,
+    public readonly endTime: string,
   ) {
     if (!this.isValidTimeFormat(startTime))
       throw new Error('Invalid start time format. Use HH:mm.');
@@ -17,14 +17,6 @@ export class TimeSlot implements ValueObject {
 
   conflictsWith(other: TimeSlot): boolean {
     return this.startTime < other.endTime && this.endTime > other.startTime;
-  }
-
-  getStartTime(): string {
-    return this.startTime;
-  }
-
-  getEndTime(): string {
-    return this.endTime;
   }
 
   equals(other: TimeSlot): boolean {

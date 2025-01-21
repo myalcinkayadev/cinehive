@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsString,
@@ -8,7 +8,10 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export class AddMovieDto {
+export class MovieDto {
+  @ApiHideProperty()
+  id?: string;
+
   @IsString()
   @ApiProperty({
     description: 'Name of the movie',
@@ -26,15 +29,15 @@ export class AddMovieDto {
   @IsArray()
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
-  @Type(() => CreateSessionDto)
+  @Type(() => SessionDto)
   @ApiProperty({
     description: 'List of sessions for the movie',
-    type: () => [CreateSessionDto],
+    type: () => [SessionDto],
   })
-  sessions!: CreateSessionDto[];
+  sessions!: SessionDto[];
 }
 
-export class CreateSessionDto {
+export class SessionDto {
   @IsString()
   @ApiProperty({
     description: 'Date of the session (in YYYY-MM-DD format)',

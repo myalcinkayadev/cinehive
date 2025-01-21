@@ -17,7 +17,7 @@ export class Movie extends Entity implements AggregateRoot {
     this._ageRestriction = ageRestriction;
   }
 
-  get movieName(): MovieName {
+  get name(): MovieName {
     return this._movieName;
   }
 

@@ -7,7 +7,7 @@ describe('Room', () => {
       const room = new Room('Room A');
 
       // Assert
-      expect(room.toString()).toBe('Room A');
+      expect(room.valueOf()).toBe('Room A');
     });
 
     it('should throw an error when the name is empty', () => {
@@ -30,7 +30,7 @@ describe('Room', () => {
       const room = new Room('  Room B  ');
 
       // Assert
-      expect(room.toString()).toBe('Room B');
+      expect(room.valueOf()).toBe('Room B');
     });
   });
 

@@ -35,7 +35,7 @@ export class BuyTicketUseCase implements UseCaseHandler<BuyTicketDto, Ticket> {
     const user = await this.userPort.getUser(useCase.userId);
     if (!user) throw new UserNotFoundError(useCase.userId);
 
-    const movieAgeRestriction = session.movie.getAgeRestriction();
+    const movieAgeRestriction = session.movie.ageRestriction;
     if (!movieAgeRestriction.isAllowedForAge(user.age))
       throw new MovieAgeRestrictionViolationError();
 

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { UseCaseHandler } from '../../../shared/usecase/use-case-handler';
-import { AddMovieDto } from '../dtos/add-movie.dto';
+import { MovieDto } from '../dtos/movie.dto';
 import { Movie } from '../../domain/movie.entity';
 import {
   MOVIE_REPOSITORY,
@@ -18,7 +18,7 @@ import {
 } from '../../domain/repositories/session.repository';
 
 @Injectable()
-export class AddMovieUseCase implements UseCaseHandler<AddMovieDto, Movie> {
+export class AddMovieUseCase implements UseCaseHandler<MovieDto, Movie> {
   constructor(
     @Inject(MOVIE_REPOSITORY)
     private readonly movieRepository: MovieRepository,
@@ -28,9 +28,7 @@ export class AddMovieUseCase implements UseCaseHandler<AddMovieDto, Movie> {
   ) {}
 
   @Traceable()
-  async execute(useCase: AddMovieDto): Promise<Movie> {
-    // TODO: Use transaction but isolate from domain
-
+  async execute(useCase: MovieDto): Promise<Movie> {
     const movieToAdd = new Movie(
       this.movieRepository.nextIdentity(),
       new MovieName(useCase.name),
