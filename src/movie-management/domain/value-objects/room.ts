@@ -1,4 +1,6 @@
-export class Room {
+import { ValueObject } from '../../../shared/domain/value-object';
+
+export class Room implements ValueObject {
   private readonly name: string;
 
   constructor(name: string) {

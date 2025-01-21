@@ -1,4 +1,6 @@
-export class UserRegisteredEvent {
+import { DomainEvent } from '../event';
+
+export class UserRegisteredEvent implements DomainEvent {
   constructor(
     public readonly userId: string,
     public readonly username: string,

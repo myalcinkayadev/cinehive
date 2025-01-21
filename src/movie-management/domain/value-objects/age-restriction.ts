@@ -1,4 +1,6 @@
-export class AgeRestriction {
+import { ValueObject } from '../../../shared/domain/value-object';
+
+export class AgeRestriction implements ValueObject {
   constructor(private readonly restriction: number) {
     if (restriction < 0)
       throw new Error('Age restriction must be greater or equal to zero.');

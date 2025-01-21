@@ -113,6 +113,17 @@ describe('TimeSlot', () => {
     });
   });
 
+  describe('equals', () => {
+    it('should correctly compare TimeSlot', () => {
+      const slot1 = new TimeSlot('10:00', '12:00');
+      const slot2 = new TimeSlot('10:00', '12:00');
+      const slot3 = new TimeSlot('13:00', '15:00');
+
+      expect(slot1.equals(slot2));
+      expect(!slot1.equals(slot3));
+    });
+  });
+
   describe('toString', () => {
     it('should return the correct string representation of the TimeSlot', () => {
       // Arrange

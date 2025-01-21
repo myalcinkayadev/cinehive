@@ -1,4 +1,6 @@
-export class MovieUpdatedEvent {
+import { DomainEvent } from '../event';
+
+export class MovieUpdatedEvent implements DomainEvent {
   constructor(
     public readonly movieId: string,
     public readonly oldName: string,

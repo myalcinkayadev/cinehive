@@ -1,4 +1,6 @@
-export class TimeSlot {
+import { ValueObject } from '../../../shared/domain/value-object';
+
+export class TimeSlot implements ValueObject {
   constructor(
     private readonly startTime: string,
     private readonly endTime: string,
@@ -23,6 +25,10 @@ export class TimeSlot {
 
   getEndTime(): string {
     return this.endTime;
+  }
+
+  equals(other: TimeSlot): boolean {
+    return this.startTime === other.startTime && this.endTime === other.endTime;
   }
 
   toString(): string {

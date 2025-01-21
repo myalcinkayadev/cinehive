@@ -1,13 +1,16 @@
+import { Entity } from '../../shared/domain/entitiy';
 import { UserRole } from '../../shared/roles/user-role.enum';
+import { AggregateRoot } from '../../shared/domain/aggregate-root';
 
-export class User {
+export class User extends Entity implements AggregateRoot {
   constructor(
-    public readonly id: string,
+    id: string,
     public readonly username: string,
     public readonly password: string,
     public readonly age: number,
     public readonly role: UserRole,
   ) {
+    super(id);
     if (age < 0) {
       throw new Error('Age must be greater or equal to zero.');
     }

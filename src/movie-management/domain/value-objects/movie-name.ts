@@ -1,4 +1,6 @@
-export class MovieName {
+import { ValueObject } from '../../../shared/domain/value-object';
+
+export class MovieName implements ValueObject {
   private readonly name: string;
 
   constructor(name: string) {
@@ -11,6 +13,10 @@ export class MovieName {
     }
 
     this.name = name.trim();
+  }
+
+  equals(other: MovieName): boolean {
+    return this.name === other.name;
   }
 
   valueOf(): string {

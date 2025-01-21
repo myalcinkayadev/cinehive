@@ -1,39 +1,42 @@
+import { AggregateRoot } from '../../shared/domain/aggregate-root';
+import { Entity } from '../../shared/domain/entitiy';
 import { SessionConflictError } from './errors/sessionConflictError';
 import { Session } from './session.entity';
 import { AgeRestriction } from './value-objects/age-restriction';
 import { MovieName } from './value-objects/movie-name';
 
-export class Movie {
+export class Movie extends Entity implements AggregateRoot {
+  private _movieName: MovieName;
+  private _ageRestriction: AgeRestriction;
+
   public readonly sessions: Session[] = [];
 
-  constructor(
-    public readonly id: string,
-    private name: MovieName,
-    private ageRestriction: AgeRestriction,
-  ) {}
-
-  getMovieName(): MovieName {
-    return this.name;
+  constructor(id: string, name: MovieName, ageRestriction: AgeRestriction) {
+    super(id);
+    this._movieName = name;
+    this._ageRestriction = ageRestriction;
   }
 
-  getAgeRestriction(): AgeRestriction {
-    return this.ageRestriction;
+  get movieName(): MovieName {
+    return this._movieName;
+  }
+
+  get ageRestriction(): AgeRestriction {
+    return this._ageRestriction;
   }
 
   scheduleSession(session: Session): void {
     const isConflict = this.sessions.some((s) => s.conflictsWith(session));
-    if (isConflict) {
-      throw new SessionConflictError();
-    }
+    if (isConflict) throw new SessionConflictError();
 
     this.sessions.push(session);
   }
 
   rename(newName: string): void {
-    this.name = new MovieName(newName);
+    this._movieName = new MovieName(newName);
   }
 
-  updateAgeRestriction(newAgeRestriction: number): void {
-    this.ageRestriction = new AgeRestriction(newAgeRestriction);
+  changeAgeRestriction(newAgeRestriction: number): void {
+    this._ageRestriction = new AgeRestriction(newAgeRestriction);
   }
 }

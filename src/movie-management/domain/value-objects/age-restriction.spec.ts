@@ -87,6 +87,17 @@ describe('AgeRestriction', () => {
     });
   });
 
+  describe('equals', () => {
+    it('should correctly compare AgeRestriction', () => {
+      const age1 = new AgeRestriction(18);
+      const age2 = new AgeRestriction(18);
+      const age3 = new AgeRestriction(21);
+
+      expect(age1.equals(age2));
+      expect(!age1.equals(age3));
+    });
+  });
+
   describe('valueOf', () => {
     it('should return the correct number representation of the restriction', () => {
       // Arrange

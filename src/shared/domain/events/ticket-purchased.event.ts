@@ -1,5 +1,6 @@
-// TODO: maybe instead of relations with id, you can use state object inside the event
-export class TicketPurchasedEvent {
+import { DomainEvent } from '../event';
+
+export class TicketPurchasedEvent implements DomainEvent {
   constructor(
     public readonly ticketId: string,
     public readonly userId: string,
