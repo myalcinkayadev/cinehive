@@ -1,8 +1,12 @@
 import { MikroORM } from '@mikro-orm/core';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication, Module, ValidationPipe } from '@nestjs/common';
 import { TestingModule, Test } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module';
 import * as request from 'supertest';
+import { TelemetryModule } from '../../src/shared/telemetry/telemetry';
+
+@Module({})
+class MockModule {}
 
 export class TestSetup {
   private appInstance: INestApplication;
@@ -12,7 +16,10 @@ export class TestSetup {
   async init() {
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideModule(TelemetryModule)
+      .useModule(MockModule)
+      .compile();
 
     this.appInstance = moduleRef.createNestApplication();
     this.appInstance.useGlobalPipes(new ValidationPipe());
