@@ -14,6 +14,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { CqrsModule } from '@nestjs/cqrs';
 import jwtConfig from './shared/config/jwt.config';
 import { AuthModule } from './auth/auth.module';
+import { APP_FILTER } from '@nestjs/core';
+import { OrmExceptionFilter } from './shared/filter/orm-exception.filter';
 
 @Module({
   imports: [
@@ -34,6 +36,11 @@ import { AuthModule } from './auth/auth.module';
     MovieManagementModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: OrmExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}
