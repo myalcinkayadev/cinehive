@@ -5,12 +5,12 @@ import {
   MovieRepository,
 } from '../../domain/repositories/movie.repository';
 import { Movie } from '../../domain/movie.entity';
-import { RetrieveMovieDto } from '../dtos/retrieve-movie.dto';
+import { RetrieveMoviesDto } from '../dtos/retrieve-movies.dto';
 import { Traceable } from '../../../shared/telemetry/decorator';
 
 @Injectable()
-export class RetrieveMovieUseCase
-  implements UseCaseHandler<RetrieveMovieDto, Movie>
+export class RetrieveMoviesUseCase
+  implements UseCaseHandler<RetrieveMoviesDto, Movie[]>
 {
   constructor(
     @Inject(MOVIE_REPOSITORY)
@@ -18,7 +18,7 @@ export class RetrieveMovieUseCase
   ) {}
 
   @Traceable()
-  execute(useCase: RetrieveMovieDto): Promise<Movie | null> {
-    return this.movieRepository.findById(useCase.id);
+  execute(): Promise<Movie[]> {
+    return this.movieRepository.findAll();
   }
 }

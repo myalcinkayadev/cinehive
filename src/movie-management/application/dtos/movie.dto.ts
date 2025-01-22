@@ -6,6 +6,8 @@ import {
   IsArray,
   ArrayMinSize,
   ValidateNested,
+  IsNotEmpty,
+  Min,
 } from 'class-validator';
 
 export class MovieDto {
@@ -13,6 +15,7 @@ export class MovieDto {
   id?: string;
 
   @IsString()
+  @IsNotEmpty()
   @ApiProperty({
     description: 'Name of the movie',
     example: 'Barry Lyndon',
@@ -20,6 +23,7 @@ export class MovieDto {
   name!: string;
 
   @IsInt()
+  @Min(0)
   @ApiProperty({
     description: 'Minimum age restriction for the movie',
     example: 13,

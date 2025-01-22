@@ -33,6 +33,6 @@ export class UpdateMovieUseCase implements VoidUseCaseHandler<UpdateMovieDto> {
       movie.changeAgeRestriction(useCase.ageRestriction);
     }
 
-    await this.movieRepository.save(movie);
+    await this.movieRepository.update(movie);
   }
 }

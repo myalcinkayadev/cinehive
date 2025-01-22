@@ -18,13 +18,23 @@ export class OrmMovieRepository implements MovieRepository {
   }
 
   async findById(movieId: string): Promise<Movie | null> {
-    const movie = await this.repo.findOne({ id: movieId });
+    const movie = await this.repo.findOne(
+      { id: movieId },
+      { populate: ['sessions'] },
+    );
     return movie ? MovieMapper.toDomain(movie) : null;
   }
 
   async findAll(): Promise<Movie[]> {
-    const movies = await this.repo.findAll();
+    const movies = await this.repo.findAll({ populate: ['sessions'] });
     return movies.map(MovieMapper.toDomain);
+  }
+
+  async update(movie: Movie): Promise<void> {
+    const ref = this.em.getReference(MoviePersistence, movie.id);
+    ref.name = movie.name.valueOf();
+    ref.ageRestriction = movie.ageRestriction.valueOf();
+    await this.em.flush();
   }
 
   async save(movie: Movie): Promise<void> {

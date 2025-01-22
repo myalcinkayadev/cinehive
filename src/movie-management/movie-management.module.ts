@@ -13,7 +13,7 @@ import { OrmTicketRepository } from './infra/repositories/ticket.repository';
 import { BuyTicketUseCase } from './application/usecases/buy-ticket.use-case';
 import { TicketPersistence } from './infra/persistences/ticket.persistence';
 import { UpdateMovieUseCase } from './application/usecases/update-movie.use-case';
-import { RetrieveMovieUseCase } from './application/usecases/retrieve-movie.use-case';
+import { RetrieveMoviesUseCase } from './application/usecases/retrieve-movies.use-case';
 import { DeleteMovieUseCase } from './application/usecases/delete-movie.use-case';
 import { OrmWatchedMovieRepository } from './infra/repositories/watched-movie.repository';
 import { WATCHED_MOVIE_REPOSITORY } from './domain/repositories/watch-movie.repository';
@@ -22,6 +22,7 @@ import { QueryBusUserAdapter } from './infra/adapters/user.adapter';
 import { WatchMovieUseCase } from './application/usecases/watch-movie.use-case';
 import { WatchedMoviePersistence } from './infra/persistences/watched-movie.persistence';
 import { TicketController } from './infra/controller/ticket.controller';
+import { RetrieveMovieUseCase } from './application/usecases/retrieve-movie.use-case';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { TicketController } from './infra/controller/ticket.controller';
     { provide: WATCHED_MOVIE_REPOSITORY, useClass: OrmWatchedMovieRepository },
     AddMovieUseCase,
     UpdateMovieUseCase,
+    RetrieveMoviesUseCase,
     RetrieveMovieUseCase,
     DeleteMovieUseCase,
     BuyTicketUseCase,

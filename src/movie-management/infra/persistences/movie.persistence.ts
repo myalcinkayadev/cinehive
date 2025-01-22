@@ -1,4 +1,5 @@
 import {
+  Cascade,
   Collection,
   Entity,
   OneToMany,
@@ -18,6 +19,8 @@ export class MoviePersistence {
   @Property()
   ageRestriction!: number;
 
-  @OneToMany(() => SessionPersistence, (session) => session.movie)
+  @OneToMany(() => SessionPersistence, (session) => session.movie, {
+    cascade: [Cascade.REMOVE],
+  })
   sessions = new Collection<SessionPersistence>(this);
 }

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -14,17 +15,19 @@ import { UpdateMovieDto } from '../../../movie-management/application/dtos/updat
 import { WatchMovieDto } from '../../../movie-management/application/dtos/watch-movie.dto';
 import { CurrentUser } from '../../../shared/decorators/current-user.decorator';
 import { AddMovieUseCase } from '../../../movie-management/application/usecases/add-movie.use-case';
-import { RetrieveMovieUseCase } from '../../../movie-management/application/usecases/retrieve-movie.use-case';
+import { RetrieveMoviesUseCase } from '../../application/usecases/retrieve-movies.use-case';
 import { UpdateMovieUseCase } from '../../../movie-management/application/usecases/update-movie.use-case';
 import { DeleteMovieUseCase } from '../../../movie-management/application/usecases/delete-movie.use-case';
 import { WatchMovieUseCase } from '../../../movie-management/application/usecases/watch-movie.use-case';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MovieMapper } from '../mappers/movie.mapper';
+import { RetrieveMovieUseCase } from '../../../movie-management/application/usecases/retrieve-movie.use-case';
 
 @Controller('movies')
 export class MovieController {
   constructor(
     private readonly addMovieUseCase: AddMovieUseCase,
+    private readonly retrieveMoviesUseCase: RetrieveMoviesUseCase,
     private readonly retrieveMovieUseCase: RetrieveMovieUseCase,
     private readonly updateMovieUseCase: UpdateMovieUseCase,
     private readonly deleteMovieUseCase: DeleteMovieUseCase,
@@ -44,12 +47,22 @@ export class MovieController {
     return MovieMapper.toDto(movie);
   }
 
+  @Get(':id')
+  @Auth(UserRole.Manager, UserRole.Customer)
+  @ApiOperation({ summary: 'Retrieve movie' })
+  @ApiResponse({ status: 200, description: 'Retrieve a movie by id' })
+  async retrieveMovie(@Param('id') id: string) {
+    const movie = await this.retrieveMovieUseCase.execute({ id });
+    if (!movie) throw new NotFoundException();
+    return MovieMapper.toDto(movie);
+  }
+
   @Get()
   @Auth(UserRole.Manager, UserRole.Customer)
   @ApiOperation({ summary: 'Retrieve all movies' })
   @ApiResponse({ status: 200, description: 'List of all movies.' })
   async retrieveMovies() {
-    const movies = await this.retrieveMovieUseCase.execute();
+    const movies = await this.retrieveMoviesUseCase.execute();
     return movies.map((movie) => MovieMapper.toDto(movie));
   }
 

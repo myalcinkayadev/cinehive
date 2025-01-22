@@ -7,11 +7,19 @@ import { MovieDto } from '../../application/dtos/movie.dto';
 
 export class MovieMapper {
   static toDomain(persistence: MoviePersistence): Movie {
-    return new Movie(
+    const movie = new Movie(
       persistence.id,
       new MovieName(persistence.name),
       new AgeRestriction(persistence.ageRestriction),
     );
+
+    if (persistence.sessions.isInitialized()) {
+      for (const session of persistence.sessions) {
+        movie.scheduleSession(SessionMapper.toDomain(session));
+      }
+    }
+
+    return movie;
   }
 
   static toPersistence(domain: Movie): MoviePersistence {
