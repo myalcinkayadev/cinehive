@@ -258,8 +258,8 @@
           "primary": false,
           "nullable": false,
           "enumItems": [
-            "customer",
-            "manager"
+            "Customer",
+            "Manager"
           ],
           "mappedType": "enum"
         },
