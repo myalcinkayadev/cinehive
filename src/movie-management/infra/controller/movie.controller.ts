@@ -2,7 +2,9 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Patch,
@@ -22,6 +24,9 @@ import { WatchMovieUseCase } from '../../../movie-management/application/usecase
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MovieMapper } from '../mappers/movie.mapper';
 import { RetrieveMovieUseCase } from '../../../movie-management/application/usecases/retrieve-movie.use-case';
+import { MovieNotFoundError } from '../../../movie-management/application/error/movieNotFoundError';
+import { TicketNotFoundError } from '../../../movie-management/application/error/ticketNotFoundError';
+import { UserNotFoundError } from '../../../movie-management/application/error/userNotFoundError';
 
 @Controller('movies')
 export class MovieController {
@@ -104,15 +109,34 @@ export class MovieController {
   @ApiParam({ name: 'id', description: 'The ID of the movie to watch' })
   @ApiResponse({ status: 200, description: 'Movie watched successfully.' })
   @ApiResponse({ status: 400 })
+  @HttpCode(200)
   async watchMovie(
     @Param('id') movieId: string,
-    @CurrentUser('id') userId: string,
+    @CurrentUser() currentUser,
     @Body() watchMovieDto: WatchMovieDto,
   ) {
-    return this.watchMovieUseCase.execute({
-      userId,
-      movieId,
-      ...watchMovieDto,
-    });
+    try {
+      await this.watchMovieUseCase.execute({
+        userId: currentUser.userId,
+        movieId,
+        ...watchMovieDto,
+      });
+      return { message: 'Enjoy the movie!' };
+    } catch (error) {
+      if (
+        error instanceof MovieNotFoundError ||
+        error instanceof UserNotFoundError
+      ) {
+        throw new NotFoundException(error.message);
+      }
+
+      if (error instanceof TicketNotFoundError) {
+        throw new ForbiddenException(
+          'Invalid or missing ticket for this movie.',
+        );
+      }
+
+      throw error;
+    }
   }
 }

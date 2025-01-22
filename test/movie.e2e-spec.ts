@@ -279,6 +279,96 @@ describe('Movie Management (E2E)', () => {
     });
   });
 
+  describe('Watch Operations', () => {
+    it('should allow a customer to watch a movie', async () => {
+      const newMovie: MovieDto = {
+        name: 'Avatar',
+        ageRestriction: 13,
+        sessions: [
+          {
+            date: '2025-04-10',
+            timeSlotStart: '18:00',
+            timeSlotEnd: '20:00',
+            roomName: 'Room E',
+          },
+        ],
+      };
+
+      const movieResponse = await setup.request
+        .post('/movies')
+        .set('Authorization', `Bearer ${managerToken}`)
+        .send(newMovie)
+        .expect(201);
+
+      const movieId = movieResponse.body.id;
+      const sessionId = movieResponse.body.sessions[0].id;
+
+      const ticketRequest = {
+        userId: customerId,
+        sessionId,
+      };
+
+      const ticketResponse = await setup.request
+        .post('/tickets')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send(ticketRequest)
+        .expect(201);
+
+      const watchMovieRequest = {
+        movieId,
+        ticketId: ticketResponse.body.id,
+      };
+
+      const watchResponse = await setup.request
+        .post(`/movies/${movieId}/watch`)
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send(watchMovieRequest)
+        .expect(200);
+
+      expect(watchResponse.body).toMatchObject({
+        message: 'Enjoy the movie!',
+      });
+    });
+
+    it('should return 403 when a customer tries to watch a movie without a valid ticket', async () => {
+      const newMovie: MovieDto = {
+        name: 'The Matrix',
+        ageRestriction: 13,
+        sessions: [
+          {
+            date: '2025-06-10',
+            timeSlotStart: '20:00',
+            timeSlotEnd: '22:00',
+            roomName: 'Room F',
+          },
+        ],
+      };
+
+      const movieResponse = await setup.request
+        .post('/movies')
+        .set('Authorization', `Bearer ${managerToken}`)
+        .send(newMovie)
+        .expect(201);
+
+      const movieId = movieResponse.body.id;
+
+      const watchMovieRequest = {
+        movieId,
+        ticketId: 'invalidTicketId',
+      };
+
+      const watchResponse = await setup.request
+        .post(`/movies/${movieId}/watch`)
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send(watchMovieRequest)
+        .expect(403);
+
+      expect(watchResponse.body.message).toBe(
+        'Invalid or missing ticket for this movie.',
+      );
+    });
+  });
+
   describe('Validation and Error Handling', () => {
     it('should return 400 for invalid movie data', async () => {
       const invalidMovie = {

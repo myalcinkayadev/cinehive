@@ -35,12 +35,12 @@ export class TicketController {
     status: 400,
   })
   async buyTicket(
-    @CurrentUser('id') userId: string,
+    @CurrentUser() currentUser,
     @Body() buyTicketDto: BuyTicketDto,
   ) {
     try {
       const purchasedTicket = await this.buyTicketUseCase.execute({
-        userId,
+        userId: currentUser.userId,
         ...buyTicketDto,
       });
       return TicketMapper.toDto(purchasedTicket);
