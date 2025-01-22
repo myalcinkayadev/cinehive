@@ -3,6 +3,9 @@ import { IsNotEmpty } from 'class-validator';
 
 export class BuyTicketDto {
   @ApiHideProperty()
+  id?: string;
+
+  @ApiHideProperty()
   userId!: string;
 
   @IsNotEmpty()

@@ -1,3 +1,4 @@
+import { BuyTicketDto } from '../../../movie-management/application/dtos/buy-ticket.dto';
 import { Ticket } from '../../../movie-management/domain/ticket.entity';
 import { TicketPersistence } from '../persistences/ticket.persistence';
 
@@ -17,5 +18,13 @@ export class TicketMapper {
     ticketToPersist.sessionId = domain.sessionId;
     ticketToPersist.purchasedAt = domain.purchasedAt;
     return ticketToPersist;
+  }
+
+  static toDto(domain: Ticket): BuyTicketDto {
+    const ticket = new BuyTicketDto();
+    ticket.id = domain.id;
+    ticket.userId = domain.userId;
+    ticket.sessionId = domain.sessionId;
+    return ticket;
   }
 }

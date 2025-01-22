@@ -4,8 +4,6 @@ import { Room } from './value-objects/room';
 import { TimeSlot } from './value-objects/time-slot';
 
 export class Session extends Entity {
-  public readonly movie: Movie;
-
   constructor(
     id: string,
     public readonly movieId: string,

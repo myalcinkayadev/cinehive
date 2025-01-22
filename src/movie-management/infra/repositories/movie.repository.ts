@@ -5,6 +5,8 @@ import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { MovieMapper } from '../mappers/movie.mapper';
 import { ulid } from 'ulid';
+import { SessionPersistence } from '../persistences/session.persistence';
+import { SessionMapper } from '../mappers/session.mapper';
 
 export class OrmMovieRepository implements MovieRepository {
   constructor(
@@ -23,6 +25,21 @@ export class OrmMovieRepository implements MovieRepository {
       { populate: ['sessions'] },
     );
     return movie ? MovieMapper.toDomain(movie) : null;
+  }
+
+  async findBySessionId(sessionId: string): Promise<Movie | null> {
+    const session = await this.em.findOne(SessionPersistence, sessionId, {
+      populate: ['movie'],
+    });
+
+    if (!session || !session.movie) {
+      return null;
+    }
+
+    const movie = MovieMapper.toDomain(session.movie).scheduleSession(
+      SessionMapper.toDomain(session),
+    );
+    return movie;
   }
 
   async findAll(): Promise<Movie[]> {

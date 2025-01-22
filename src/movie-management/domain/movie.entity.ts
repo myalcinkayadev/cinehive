@@ -25,11 +25,11 @@ export class Movie extends Entity implements AggregateRoot {
     return this._ageRestriction;
   }
 
-  scheduleSession(session: Session): void {
+  scheduleSession(session: Session): this {
     const isConflict = this.sessions.some((s) => s.conflictsWith(session));
     if (isConflict) throw new SessionConflictError();
-
     this.sessions.push(session);
+    return this;
   }
 
   rename(newName: string): void {

@@ -42,6 +42,9 @@ export class MovieDto {
 }
 
 export class SessionDto {
+  @ApiHideProperty()
+  id?: string;
+
   @IsString()
   @ApiProperty({
     description: 'Date of the session (in YYYY-MM-DD format)',

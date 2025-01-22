@@ -4,16 +4,19 @@ import { SessionPersistence } from '../persistences/session.persistence';
 import { Room } from '../../../movie-management/domain/value-objects/room';
 import { MoviePersistence } from '../persistences/movie.persistence';
 import { SessionDto } from '../../application/dtos/movie.dto';
+import { MovieMapper } from './movie.mapper';
 
 export class SessionMapper {
   static toDomain(persistence: SessionPersistence): Session {
-    return new Session(
+    const session = new Session(
       persistence.id,
       persistence.movie.id,
       persistence.date,
       new TimeSlot(persistence.timeSlotStart, persistence.timeSlotEnd),
       new Room(persistence.roomName),
     );
+
+    return session;
   }
 
   static toPersistence(domain: Session): SessionPersistence {
@@ -32,6 +35,7 @@ export class SessionMapper {
 
   static toDto(session: Session): SessionDto {
     return {
+      id: session.id,
       date: session.date.toISOString(),
       timeSlotStart: session.timeSlot.startTime,
       timeSlotEnd: session.timeSlot.endTime,

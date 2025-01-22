@@ -19,8 +19,6 @@ export class MoviePersistence {
   @Property()
   ageRestriction!: number;
 
-  @OneToMany(() => SessionPersistence, (session) => session.movie, {
-    cascade: [Cascade.REMOVE],
-  })
+  @OneToMany(() => SessionPersistence, (session) => session.movie)
   sessions = new Collection<SessionPersistence>(this);
 }

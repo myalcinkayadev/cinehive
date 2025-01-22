@@ -5,6 +5,7 @@ import { UserRole } from '../../../shared/roles/user-role.enum';
 import { Auth } from '../../../auth/decorators/auth.decorator';
 import { CurrentUser } from '../../../shared/decorators/current-user.decorator';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { TicketMapper } from '../mappers/ticket.mapper';
 
 @Controller('tickets')
 export class TicketController {
@@ -28,9 +29,10 @@ export class TicketController {
     @CurrentUser('id') userId: string,
     @Body() buyTicketDto: BuyTicketDto,
   ) {
-    return this.buyTicketUseCase.execute({
+    const purchasedTicket = await this.buyTicketUseCase.execute({
       userId,
       ...buyTicketDto,
     });
+    return TicketMapper.toDto(purchasedTicket);
   }
 }
