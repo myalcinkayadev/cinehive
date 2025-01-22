@@ -7,6 +7,7 @@ describe('Movie Management (E2E)', () => {
   const setup = new TestSetup();
 
   let managerToken: string;
+  let customerId: string;
   let customerToken: string;
 
   beforeAll(async () => {
@@ -21,7 +22,7 @@ describe('Movie Management (E2E)', () => {
     const newCustomer: SignUpDto = {
       username: 'customer',
       password: 'secret',
-      age: 30,
+      age: 20,
       role: UserRole.Customer,
     };
 
@@ -44,6 +45,13 @@ describe('Movie Management (E2E)', () => {
 
     managerToken = managerResponse.body.access_token;
     customerToken = customerResponse.body.access_token;
+
+    const profileResponse = await setup.request
+      .get('/users/profile')
+      .set('Authorization', `Bearer ${customerToken}`)
+      .expect(200);
+
+    customerId = profileResponse.body.userId;
   });
 
   afterAll(async () => {
@@ -175,56 +183,45 @@ describe('Movie Management (E2E)', () => {
   });
 
   describe('Ticket Operations', () => {
-    it(
-      'should allow a customer to buy a ticket',
-      async () => {
-        const profileResponse = await setup.request
-          .get('/users/profile')
-          .set('Authorization', `Bearer ${customerToken}`)
-          .expect(200);
+    it('should allow a customer to buy a ticket', async () => {
+      const newMovie: MovieDto = {
+        name: 'Batman',
+        ageRestriction: 18,
+        sessions: [
+          {
+            date: '2025-03-15',
+            timeSlotStart: '10:00',
+            timeSlotEnd: '12:00',
+            roomName: 'Room C',
+          },
+        ],
+      };
 
-        const customerId = profileResponse.body.userId;
+      const movieResponse = await setup.request
+        .post('/movies')
+        .set('Authorization', `Bearer ${managerToken}`)
+        .send(newMovie)
+        .expect(201);
 
-        const newMovie: MovieDto = {
-          name: 'Batman',
-          ageRestriction: 18,
-          sessions: [
-            {
-              date: '2025-03-15',
-              timeSlotStart: '10:00',
-              timeSlotEnd: '12:00',
-              roomName: 'Room C',
-            },
-          ],
-        };
+      const sessionId = movieResponse.body.sessions[0].id;
 
-        const movieResponse = await setup.request
-          .post('/movies')
-          .set('Authorization', `Bearer ${managerToken}`)
-          .send(newMovie)
-          .expect(201);
+      const ticketRequest = {
+        userId: customerId,
+        sessionId,
+      };
 
-        const sessionId = movieResponse.body.sessions[0].id;
+      const ticketResponse = await setup.request
+        .post('/tickets')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send(ticketRequest)
+        .expect(201);
 
-        const ticketRequest = {
-          userId: customerId,
-          sessionId,
-        };
-
-        const ticketResponse = await setup.request
-          .post('/tickets')
-          .set('Authorization', `Bearer ${customerToken}`)
-          .send(ticketRequest)
-          .expect(201);
-
-        expect(ticketResponse.body).toMatchObject({
-          id: expect.any(String),
-          userId: customerId,
-          sessionId: sessionId,
-        });
-      },
-      90 * 1000,
-    );
+      expect(ticketResponse.body).toMatchObject({
+        id: expect.any(String),
+        userId: customerId,
+        sessionId: sessionId,
+      });
+    });
 
     // it('should return 400 when trying to buy a ticket for a non-existent session', async () => {
     //   const ticketRequest = {
@@ -241,43 +238,43 @@ describe('Movie Management (E2E)', () => {
     //   expect(response.body.message).toBe('Session does not exist.');
     // });
 
-    // it('should return 403 when a customer tries to buy a ticket with age restriction not met', async () => {
-    //   const newMovie: MovieDto = {
-    //     name: 'The Godfather',
-    //     ageRestriction: 18,
-    //     sessions: [
-    //       {
-    //         date: '2025-05-20',
-    //         timeSlotStart: '18:00',
-    //         timeSlotEnd: '20:00',
-    //         roomName: 'Room D',
-    //       },
-    //     ],
-    //   };
+    it('should return 403 when a customer tries to buy a ticket with age restriction not met', async () => {
+      const newMovie: MovieDto = {
+        name: 'The Godfather',
+        ageRestriction: 25,
+        sessions: [
+          {
+            date: '2025-05-20',
+            timeSlotStart: '18:00',
+            timeSlotEnd: '20:00',
+            roomName: 'Room D',
+          },
+        ],
+      };
 
-    //   const movieResponse = await setup.request
-    //     .post('/movies')
-    //     .set('Authorization', `Bearer ${managerToken}`)
-    //     .send(newMovie)
-    //     .expect(201);
+      const movieResponse = await setup.request
+        .post('/movies')
+        .set('Authorization', `Bearer ${managerToken}`)
+        .send(newMovie)
+        .expect(201);
 
-    //   const sessionId = movieResponse.body.sessions[0].id;
+      const sessionId = movieResponse.body.sessions[0].id;
 
-    //   const ticketRequest = {
-    //     userId: 'customerId',
-    //     sessionId,
-    //   };
+      const ticketRequest = {
+        userId: customerId,
+        sessionId,
+      };
 
-    //   const response = await setup.request
-    //     .post('/tickets')
-    //     .set('Authorization', `Bearer ${customerToken}`)
-    //     .send(ticketRequest)
-    //     .expect(403);
+      const response = await setup.request
+        .post('/tickets')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send(ticketRequest)
+        .expect(403);
 
-    //   expect(response.body.message).toBe(
-    //     'User does not meet the age restriction for this movie.',
-    //   );
-    // });
+      expect(response.body.message).toBe(
+        'User does not meet the age restriction for this movie.',
+      );
+    });
   });
 
   describe('Validation and Error Handling', () => {
