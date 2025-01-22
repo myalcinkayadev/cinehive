@@ -223,20 +223,22 @@ describe('Movie Management (E2E)', () => {
       });
     });
 
-    // it('should return 400 when trying to buy a ticket for a non-existent session', async () => {
-    //   const ticketRequest = {
-    //     userId: 'customerId',
-    //     sessionId: 'nonExistentSessionId',
-    //   };
+    it('should return 400 when trying to buy a ticket for a non-existent session', async () => {
+      const ticketRequest = {
+        userId: customerId,
+        sessionId: 'nonExistentSessionId',
+      };
 
-    //   const response = await setup.request
-    //     .post('/tickets')
-    //     .set('Authorization', `Bearer ${customerToken}`)
-    //     .send(ticketRequest)
-    //     .expect(400);
+      const response = await setup.request
+        .post('/tickets')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send(ticketRequest)
+        .expect(404);
 
-    //   expect(response.body.message).toBe('Session does not exist.');
-    // });
+      expect(response.body.message).toBe(
+        'Session nonExistentSessionId is not found',
+      );
+    });
 
     it('should return 403 when a customer tries to buy a ticket with age restriction not met', async () => {
       const newMovie: MovieDto = {
