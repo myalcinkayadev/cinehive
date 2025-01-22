@@ -8,7 +8,7 @@ import { USER_PORT, UserPort } from '../../domain/ports/user.port';
 import { Traceable } from '../../../shared/telemetry/decorator';
 import { UseCaseHandler } from '../../../shared/usecase/use-case-handler';
 import { BuyTicketDto } from '../dtos/buy-ticket.dto';
-import { SessionNotFound } from '../error/sessionNotFoundError';
+import { SessionNotFoundError } from '../error/sessionNotFoundError';
 import { UserNotFoundError } from '../error/userNotFoundError';
 import { MovieAgeRestrictionViolationError } from '../error/movieAgeRestrictionViolationError';
 import {
@@ -34,7 +34,7 @@ export class BuyTicketUseCase implements UseCaseHandler<BuyTicketDto, Ticket> {
 
     const movie = await this.movieRepository.findBySessionId(useCase.sessionId);
     if (!movie || movie.sessions.length === 0)
-      throw new SessionNotFound(useCase.sessionId);
+      throw new SessionNotFoundError(useCase.sessionId);
 
     const session = movie.sessions[0];
     const movieAgeRestriction = movie.ageRestriction;

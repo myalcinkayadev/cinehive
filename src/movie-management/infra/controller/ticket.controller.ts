@@ -1,4 +1,10 @@
-import { Body, Controller, ForbiddenException, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  NotFoundException,
+  Post,
+} from '@nestjs/common';
 import { BuyTicketDto } from '../../application/dtos/buy-ticket.dto';
 import { BuyTicketUseCase } from '../../application/usecases/buy-ticket.use-case';
 import { UserRole } from '../../../shared/roles/user-role.enum';
@@ -7,6 +13,8 @@ import { CurrentUser } from '../../../shared/decorators/current-user.decorator';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { TicketMapper } from '../mappers/ticket.mapper';
 import { MovieAgeRestrictionViolationError } from '../../../movie-management/application/error/movieAgeRestrictionViolationError';
+import { SessionNotFoundError } from '../../../movie-management/application/error/sessionNotFoundError';
+import { UserNotFoundError } from '../../../movie-management/application/error/userNotFoundError';
 
 @Controller('tickets')
 export class TicketController {
@@ -39,6 +47,14 @@ export class TicketController {
     } catch (error) {
       if (error instanceof MovieAgeRestrictionViolationError) {
         throw new ForbiddenException(error.message);
+      }
+
+      if (error instanceof SessionNotFoundError) {
+        throw new NotFoundException(error.message);
+      }
+
+      if (error instanceof UserNotFoundError) {
+        throw new NotFoundException(error.message);
       }
 
       throw error;
