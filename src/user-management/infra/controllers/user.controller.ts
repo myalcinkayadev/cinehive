@@ -3,9 +3,12 @@ import { CurrentUser } from '../../../shared/decorators/current-user.decorator';
 import { Auth } from '../../../auth/decorators/auth.decorator';
 import { UserRole } from '../../../shared/roles/user-role.enum';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { WatchHistoryService } from '../../../user-management/application/services/watch-history.service';
 
 @Controller('users')
 export class UserController {
+  constructor(private readonly watchHistoryService: WatchHistoryService) {}
+
   @Auth()
   @Get('profile')
   @ApiOperation({
@@ -26,8 +29,7 @@ export class UserController {
     status: 200,
     description: 'Successfully retrieved the watch history.',
   })
-  async watchHistory() {
-    return [];
-    // TODO: use command bus to isolate user context from other context
+  async watchHistory(@CurrentUser() currentUser) {
+    return this.watchHistoryService.getHistory(currentUser.userId);
   }
 }

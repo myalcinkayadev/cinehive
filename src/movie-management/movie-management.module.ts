@@ -16,13 +16,14 @@ import { UpdateMovieUseCase } from './application/usecases/update-movie.use-case
 import { RetrieveMoviesUseCase } from './application/usecases/retrieve-movies.use-case';
 import { DeleteMovieUseCase } from './application/usecases/delete-movie.use-case';
 import { OrmWatchedMovieRepository } from './infra/repositories/watched-movie.repository';
-import { WATCHED_MOVIE_REPOSITORY } from './domain/repositories/watch-movie.repository';
+import { WATCHED_MOVIE_REPOSITORY } from './domain/repositories/watched-movie.repository';
 import { USER_PORT } from './domain/ports/user.port';
 import { QueryBusUserAdapter } from './infra/adapters/user.adapter';
 import { WatchMovieUseCase } from './application/usecases/watch-movie.use-case';
 import { WatchedMoviePersistence } from './infra/persistences/watched-movie.persistence';
 import { TicketController } from './infra/controller/ticket.controller';
 import { RetrieveMovieUseCase } from './application/usecases/retrieve-movie.use-case';
+import { GetWatchedMoviesQueryHandler } from './application/handlers/get-watch-movies.handler';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { RetrieveMovieUseCase } from './application/usecases/retrieve-movie.use-
     { provide: SESSION_REPOSITORY, useClass: OrmSessionRepository },
     { provide: TICKET_REPOSITORY, useClass: OrmTicketRepository },
     { provide: WATCHED_MOVIE_REPOSITORY, useClass: OrmWatchedMovieRepository },
+    GetWatchedMoviesQueryHandler,
     AddMovieUseCase,
     UpdateMovieUseCase,
     RetrieveMoviesUseCase,

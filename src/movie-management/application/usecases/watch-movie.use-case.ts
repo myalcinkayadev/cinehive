@@ -16,7 +16,7 @@ import { WatchedMovie } from '../../../movie-management/domain/watched-movie.ent
 import {
   WATCHED_MOVIE_REPOSITORY,
   WatchedMovieRepository,
-} from '../../../movie-management/domain/repositories/watch-movie.repository';
+} from '../../domain/repositories/watched-movie.repository';
 import {
   USER_PORT,
   UserPort,

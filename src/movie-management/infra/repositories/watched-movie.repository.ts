@@ -1,7 +1,7 @@
 import { EntityRepository, EntityManager } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
-import { WatchedMovieRepository } from '../../../movie-management/domain/repositories/watch-movie.repository';
+import { WatchedMovieRepository } from '../../domain/repositories/watched-movie.repository';
 import { WatchedMovie } from '../../../movie-management/domain/watched-movie.entity';
 import { ulid } from 'ulid';
 import { WatchedMoviePersistence } from '../persistences/watched-movie.persistence';
