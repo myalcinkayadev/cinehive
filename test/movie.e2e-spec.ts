@@ -369,6 +369,105 @@ describe('Movie Management (E2E)', () => {
     });
   });
 
+  describe('Watch History Operations', () => {
+    it('should return an empty watch history for a new customer', async () => {
+      const newCustomer: SignUpDto = {
+        username: 'customer_for_watch-history',
+        password: 'secret',
+        age: 30,
+        role: UserRole.Customer,
+      };
+      await setup.request.post('/auth/signup').send(newCustomer).expect(201);
+
+      const customerResponse = await setup.request
+        .post('/auth/login')
+        .send({
+          username: newCustomer.username,
+          password: newCustomer.password,
+        })
+        .expect(200);
+
+      const newCustomerToken = customerResponse.body.access_token;
+
+      const response = await setup.request
+        .get('/users/profile/watch-history')
+        .set('Authorization', `Bearer ${newCustomerToken}`)
+        .expect(200);
+
+      expect(response.body).toEqual([]);
+    });
+
+    it('should return a populated watch history after watching a movie', async () => {
+      const newMovie: MovieDto = {
+        name: 'Interstellar',
+        ageRestriction: 13,
+        sessions: [
+          {
+            date: '2025-07-15',
+            timeSlotStart: '19:00',
+            timeSlotEnd: '22:00',
+            roomName: 'Room G',
+          },
+        ],
+      };
+
+      const movieResponse = await setup.request
+        .post('/movies')
+        .set('Authorization', `Bearer ${managerToken}`)
+        .send(newMovie)
+        .expect(201);
+
+      const movieId = movieResponse.body.id;
+      const sessionId = movieResponse.body.sessions[0].id;
+
+      const ticketRequest = {
+        userId: customerId,
+        sessionId,
+      };
+
+      const ticketResponse = await setup.request
+        .post('/tickets')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send(ticketRequest)
+        .expect(201);
+
+      const watchMovieRequest = {
+        movieId,
+        ticketId: ticketResponse.body.id,
+      };
+
+      await setup.request
+        .post(`/movies/${movieId}/watch`)
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send(watchMovieRequest)
+        .expect(200);
+
+      const historyResponse = await setup.request
+        .get('/users/profile/watch-history')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .expect(200);
+
+      expect(historyResponse.body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            movieId,
+            ticketId: watchMovieRequest.ticketId,
+            userId: customerId,
+            watchedAt: expect.any(String),
+          }),
+        ]),
+      );
+    });
+
+    it('should return 403 for unauthorized access to watch history', async () => {
+      const response = await setup.request
+        .get('/users/profile/watch-history')
+        .expect(401);
+
+      expect(response.body.message).toBe('Unauthorized');
+    });
+  });
+
   describe('Validation and Error Handling', () => {
     it('should return 400 for invalid movie data', async () => {
       const invalidMovie = {
