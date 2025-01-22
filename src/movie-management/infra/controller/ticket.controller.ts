@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Post } from '@nestjs/common';
 import { BuyTicketDto } from '../../application/dtos/buy-ticket.dto';
 import { BuyTicketUseCase } from '../../application/usecases/buy-ticket.use-case';
 import { UserRole } from '../../../shared/roles/user-role.enum';
@@ -6,6 +6,7 @@ import { Auth } from '../../../auth/decorators/auth.decorator';
 import { CurrentUser } from '../../../shared/decorators/current-user.decorator';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { TicketMapper } from '../mappers/ticket.mapper';
+import { MovieAgeRestrictionViolationError } from '../../../movie-management/application/error/movieAgeRestrictionViolationError';
 
 @Controller('tickets')
 export class TicketController {
@@ -29,10 +30,18 @@ export class TicketController {
     @CurrentUser('id') userId: string,
     @Body() buyTicketDto: BuyTicketDto,
   ) {
-    const purchasedTicket = await this.buyTicketUseCase.execute({
-      userId,
-      ...buyTicketDto,
-    });
-    return TicketMapper.toDto(purchasedTicket);
+    try {
+      const purchasedTicket = await this.buyTicketUseCase.execute({
+        userId,
+        ...buyTicketDto,
+      });
+      return TicketMapper.toDto(purchasedTicket);
+    } catch (error) {
+      if (error instanceof MovieAgeRestrictionViolationError) {
+        throw new ForbiddenException(error.message);
+      }
+
+      throw error;
+    }
   }
 }
