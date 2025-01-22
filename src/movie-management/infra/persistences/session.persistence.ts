@@ -1,4 +1,10 @@
-import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core';
+import {
+  Entity,
+  PrimaryKey,
+  Property,
+  ManyToOne,
+  Cascade,
+} from '@mikro-orm/core';
 import { MoviePersistence } from './movie.persistence';
 
 @Entity({ tableName: 'sessions' })
@@ -20,6 +26,6 @@ export class SessionPersistence {
   @Property()
   roomName!: string;
 
-  @ManyToOne(() => MoviePersistence)
+  @ManyToOne(() => MoviePersistence, { cascade: [Cascade.REMOVE] })
   movie!: MoviePersistence;
 }

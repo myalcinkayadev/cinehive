@@ -7,51 +7,58 @@ describe('Movie Management (E2E)', () => {
   const setup = new TestSetup();
 
   let managerToken: string;
-  let customerId: string;
   let customerToken: string;
+  let customerId: string;
+
+  const createUserAndLogin = async (signUpDto: SignUpDto) => {
+    await setup.request.post('/auth/signup').send(signUpDto).expect(201);
+    const response = await setup.request
+      .post('/auth/login')
+      .send({ username: signUpDto.username, password: signUpDto.password })
+      .expect(200);
+
+    return response.body.access_token;
+  };
+
+  const createMovie = async (movieDto: MovieDto, token: string) => {
+    const response = await setup.request
+      .post('/movies')
+      .set('Authorization', `Bearer ${token}`)
+      .send(movieDto)
+      .expect(201);
+
+    return response.body;
+  };
+
+  const getUserProfile = async (token: string) => {
+    const response = await setup.request
+      .get('/users/profile')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    return response.body;
+  };
 
   beforeAll(async () => {
     await setup.init();
 
-    const newManager: SignUpDto = {
+    const manager: SignUpDto = {
       username: 'manager',
       password: 'secret',
       age: 25,
       role: UserRole.Manager,
     };
-    const newCustomer: SignUpDto = {
+    const customer: SignUpDto = {
       username: 'customer',
       password: 'secret',
       age: 20,
       role: UserRole.Customer,
     };
 
-    await setup.request.post('/auth/signup').send(newManager).expect(201);
-    await setup.request.post('/auth/signup').send(newCustomer).expect(201);
+    managerToken = await createUserAndLogin(manager);
+    customerToken = await createUserAndLogin(customer);
 
-    const managerResponse = await setup.request
-      .post('/auth/login')
-      .send({ username: newManager.username, password: newManager.password })
-      .expect(200);
-
-    const customerResponse = await setup.request
-      .post('/auth/login')
-      .send({ username: newCustomer.username, password: newCustomer.password })
-      .expect(200);
-
-    expect(managerResponse.body).toEqual({
-      access_token: expect.any(String),
-    });
-
-    managerToken = managerResponse.body.access_token;
-    customerToken = customerResponse.body.access_token;
-
-    const profileResponse = await setup.request
-      .get('/users/profile')
-      .set('Authorization', `Bearer ${customerToken}`)
-      .expect(200);
-
-    customerId = profileResponse.body.userId;
+    const customerProfile = await getUserProfile(customerToken);
+    customerId = customerProfile.userId;
   });
 
   afterAll(async () => {
@@ -73,22 +80,18 @@ describe('Movie Management (E2E)', () => {
         ],
       };
 
-      const response = await setup.request
-        .post('/movies')
-        .set('Authorization', `Bearer ${managerToken}`)
-        .send(newMovie)
-        .expect(201);
+      const response = await createMovie(newMovie, managerToken);
 
-      expect(response.body).toMatchObject({
+      expect(response).toMatchObject({
         id: expect.any(String),
         name: 'Vertigo',
         ageRestriction: 13,
         sessions: [
           {
             date: new Date('2025-01-20').toISOString(),
-            roomName: 'Room A',
             timeSlotStart: '14:00',
             timeSlotEnd: '16:00',
+            roomName: 'Room A',
           },
         ],
       });
@@ -117,15 +120,10 @@ describe('Movie Management (E2E)', () => {
         ],
       };
 
-      const createResponse = await setup.request
-        .post('/movies')
-        .set('Authorization', `Bearer ${managerToken}`)
-        .send(newMovie)
-        .expect(201);
+      const createdMovie = await createMovie(newMovie, managerToken);
+      const movieId = createdMovie.id;
 
-      const movieId = createResponse.body.id;
-
-      const movieToUpdate: Partial<MovieDto> = {
+      const updatedDetails = {
         name: 'Psycho (Updated)',
         ageRestriction: 18,
       };
@@ -133,22 +131,22 @@ describe('Movie Management (E2E)', () => {
       await setup.request
         .patch(`/movies/${movieId}`)
         .set('Authorization', `Bearer ${managerToken}`)
-        .send(movieToUpdate)
+        .send(updatedDetails)
         .expect(200);
 
-      const updateResponse = await setup.request
+      const updatedMovie = await setup.request
         .get(`/movies/${movieId}`)
         .set('Authorization', `Bearer ${managerToken}`)
         .expect(200);
 
-      expect(updateResponse.body).toMatchObject({
+      expect(updatedMovie.body).toMatchObject({
         id: movieId,
         name: 'Psycho (Updated)',
         ageRestriction: 18,
       });
     });
 
-    it.skip('should delete an existing movie', async () => {
+    it('should delete an existing movie', async () => {
       const newMovie: MovieDto = {
         name: 'Inception',
         ageRestriction: 13,
@@ -162,13 +160,8 @@ describe('Movie Management (E2E)', () => {
         ],
       };
 
-      const createResponse = await setup.request
-        .post('/movies')
-        .set('Authorization', `Bearer ${managerToken}`)
-        .send(newMovie)
-        .expect(201);
-
-      const movieId = createResponse.body.id;
+      const createdMovie = await createMovie(newMovie, managerToken);
+      const movieId = createdMovie.id;
 
       await setup.request
         .delete(`/movies/${movieId}`)
@@ -197,13 +190,8 @@ describe('Movie Management (E2E)', () => {
         ],
       };
 
-      const movieResponse = await setup.request
-        .post('/movies')
-        .set('Authorization', `Bearer ${managerToken}`)
-        .send(newMovie)
-        .expect(201);
-
-      const sessionId = movieResponse.body.sessions[0].id;
+      const movieResponse = await createMovie(newMovie, managerToken);
+      const sessionId = movieResponse.sessions[0].id;
 
       const ticketRequest = {
         userId: customerId,
@@ -254,13 +242,8 @@ describe('Movie Management (E2E)', () => {
         ],
       };
 
-      const movieResponse = await setup.request
-        .post('/movies')
-        .set('Authorization', `Bearer ${managerToken}`)
-        .send(newMovie)
-        .expect(201);
-
-      const sessionId = movieResponse.body.sessions[0].id;
+      const movieResponse = await createMovie(newMovie, managerToken);
+      const sessionId = movieResponse.sessions[0].id;
 
       const ticketRequest = {
         userId: customerId,
@@ -377,17 +360,7 @@ describe('Movie Management (E2E)', () => {
         age: 30,
         role: UserRole.Customer,
       };
-      await setup.request.post('/auth/signup').send(newCustomer).expect(201);
-
-      const customerResponse = await setup.request
-        .post('/auth/login')
-        .send({
-          username: newCustomer.username,
-          password: newCustomer.password,
-        })
-        .expect(200);
-
-      const newCustomerToken = customerResponse.body.access_token;
+      const newCustomerToken = await createUserAndLogin(newCustomer);
 
       const response = await setup.request
         .get('/users/profile/watch-history')
@@ -411,14 +384,9 @@ describe('Movie Management (E2E)', () => {
         ],
       };
 
-      const movieResponse = await setup.request
-        .post('/movies')
-        .set('Authorization', `Bearer ${managerToken}`)
-        .send(newMovie)
-        .expect(201);
-
-      const movieId = movieResponse.body.id;
-      const sessionId = movieResponse.body.sessions[0].id;
+      const movieResponse = await createMovie(newMovie, managerToken);
+      const movieId = movieResponse.id;
+      const sessionId = movieResponse.sessions[0].id;
 
       const ticketRequest = {
         userId: customerId,
@@ -459,7 +427,7 @@ describe('Movie Management (E2E)', () => {
       );
     });
 
-    it('should return 403 for unauthorized access to watch history', async () => {
+    it('should return 401 for unauthorized access to watch history', async () => {
       const response = await setup.request
         .get('/users/profile/watch-history')
         .expect(401);
@@ -471,9 +439,9 @@ describe('Movie Management (E2E)', () => {
   describe('Validation and Error Handling', () => {
     it('should return 400 for invalid movie data', async () => {
       const invalidMovie = {
-        name: '', // Invalid name
-        ageRestriction: -5, // Invalid age restriction
-        sessions: [], // No sessions
+        name: '',
+        ageRestriction: -5,
+        sessions: [],
       };
 
       const response = await setup.request
