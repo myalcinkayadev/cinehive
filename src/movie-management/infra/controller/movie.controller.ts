@@ -21,7 +21,7 @@ import { RetrieveMoviesUseCase } from '../../application/usecases/retrieve-movie
 import { UpdateMovieUseCase } from '../../../movie-management/application/usecases/update-movie.use-case';
 import { DeleteMovieUseCase } from '../../../movie-management/application/usecases/delete-movie.use-case';
 import { WatchMovieUseCase } from '../../../movie-management/application/usecases/watch-movie.use-case';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { MovieMapper } from '../mappers/movie.mapper';
 import { RetrieveMovieUseCase } from '../../../movie-management/application/usecases/retrieve-movie.use-case';
 import { MovieNotFoundError } from '../../../movie-management/application/error/movieNotFoundError';
@@ -37,7 +37,7 @@ export class MovieController {
     private readonly updateMovieUseCase: UpdateMovieUseCase,
     private readonly deleteMovieUseCase: DeleteMovieUseCase,
     private readonly watchMovieUseCase: WatchMovieUseCase,
-  ) {}
+  ) { }
 
   @Post()
   @Auth(UserRole.Manager)
@@ -117,7 +117,7 @@ export class MovieController {
   ) {
     try {
       await this.watchMovieUseCase.execute({
-        userId: currentUser.userId,
+        userId: currentUser.id,
         movieId,
         ...watchMovieDto,
       });

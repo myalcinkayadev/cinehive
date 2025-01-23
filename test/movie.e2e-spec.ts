@@ -58,7 +58,7 @@ describe('Movie Management (E2E)', () => {
     customerToken = await createUserAndLogin(customer);
 
     const customerProfile = await getUserProfile(customerToken);
-    customerId = customerProfile.userId;
+    customerId = customerProfile.id;
   });
 
   afterAll(async () => {

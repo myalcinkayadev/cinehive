@@ -1,5 +1,4 @@
 import { Entity } from '../../shared/domain/entitiy';
-import { Movie } from './movie.entity';
 import { Room } from './value-objects/room';
 import { TimeSlot } from './value-objects/time-slot';
 

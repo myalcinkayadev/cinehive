@@ -7,7 +7,7 @@ import { WatchHistoryService } from '../../../user-management/application/servic
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly watchHistoryService: WatchHistoryService) {}
+  constructor(private readonly watchHistoryService: WatchHistoryService) { }
 
   @Auth()
   @Get('profile')
@@ -30,6 +30,6 @@ export class UserController {
     description: 'Successfully retrieved the watch history.',
   })
   async watchHistory(@CurrentUser() currentUser) {
-    return this.watchHistoryService.getHistory(currentUser.userId);
+    return this.watchHistoryService.getHistory(currentUser.id);
   }
 }

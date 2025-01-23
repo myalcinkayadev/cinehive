@@ -4,7 +4,6 @@ import { SessionPersistence } from '../persistences/session.persistence';
 import { Room } from '../../../movie-management/domain/value-objects/room';
 import { MoviePersistence } from '../persistences/movie.persistence';
 import { SessionDto } from '../../application/dtos/movie.dto';
-import { MovieMapper } from './movie.mapper';
 
 export class SessionMapper {
   static toDomain(persistence: SessionPersistence): Session {

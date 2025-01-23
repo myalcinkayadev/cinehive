@@ -14,7 +14,7 @@ export class UpdateMovieUseCase implements VoidUseCaseHandler<UpdateMovieDto> {
   constructor(
     @Inject(MOVIE_REPOSITORY)
     private readonly movieRepository: MovieRepository,
-  ) {}
+  ) { }
 
   @Traceable()
   async execute(useCase: UpdateMovieDto): Promise<void> {

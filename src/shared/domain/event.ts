@@ -1,1 +1,1 @@
-export interface DomainEvent {}
+export interface DomainEvent { }

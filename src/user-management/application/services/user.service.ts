@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   USER_REPOSITORY,
   UserRepository,
@@ -13,7 +13,7 @@ export class UserService {
     @Inject(USER_REPOSITORY)
     private readonly userRepository: UserRepository,
     private readonly hashingService: PasswordHashingService,
-  ) {}
+  ) { }
 
   findById(userId: string): Promise<User> {
     return this.userRepository.findById(userId);

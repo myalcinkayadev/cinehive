@@ -18,7 +18,7 @@ import { UserNotFoundError } from '../../../movie-management/application/error/u
 
 @Controller('tickets')
 export class TicketController {
-  constructor(private readonly buyTicketUseCase: BuyTicketUseCase) {}
+  constructor(private readonly buyTicketUseCase: BuyTicketUseCase) { }
 
   @Post()
   @Auth(UserRole.Customer)
@@ -40,7 +40,7 @@ export class TicketController {
   ) {
     try {
       const purchasedTicket = await this.buyTicketUseCase.execute({
-        userId: currentUser.userId,
+        userId: currentUser.id,
         ...buyTicketDto,
       });
       return TicketMapper.toDto(purchasedTicket);
